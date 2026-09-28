@@ -5,3 +5,6 @@
 ## Version: @project-version@
 ## X-License: MIT
 ## X-Website: https://github.com/dbspringer/smelt-it-dealt-it
+
+src/Recipes.lua
+src/Smelt.lua
