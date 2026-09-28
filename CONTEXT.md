@@ -11,15 +11,23 @@ One Mining smelt: a set of Reagents that makes a number of one bar. Each Smelt R
 _Avoid_: Recipe chain, conversion
 
 **Known Recipe**:
-A Smelt Recipe that a given character of the player has learned, as seen the last time that character opened the Mining window. The Smelt Table greys out recipes the current character does not know; the Verdict does not depend on it.
+A Smelt Recipe that a given character of the player has learned, as seen the last time that character opened the Mining window. The Smelt Table greys out a recipe that no Mailable Character knows; the Verdict does not depend on it.
 _Avoid_: Learned recipe, available recipe
+
+**Mailable Character**:
+One of the player's characters that the current character can mail items to: same faction, on the same realm or a connected realm. The current character is one too.
+_Avoid_: Alt, reachable character
+
+**Hidden Recipe**:
+A Smelt Recipe the player has chosen not to see, for every character on the account. It leaves the Smelt Table and never goes on the Shopping List.
+_Avoid_: Disabled recipe, ignored ore, filtered
 
 **Reagent**:
 An item a Smelt Recipe uses up: ore, a bar, or another material.
 _Avoid_: Input, material
 
 **Vendor Reagent**:
-A Reagent that a vendor sells in unlimited supply, such as Coal. Its price is the vendor price, not an auction price.
+A Reagent for which the Price Source knows a vendor price, because a vendor sells it in unlimited supply and the player has visited that vendor. Its price is the vendor price, not an auction price. Until then, it counts as an auction Reagent.
 _Avoid_: Vendor item
 
 ### Prices
@@ -108,9 +116,9 @@ _Avoid_: Margin, tolerance
 ### Views
 
 **Smelt Table**:
-The window that lists every Smelt Recipe as one row, with its prices, Raw Value, Smelted Value, Verdict, and Smelt Profit.
+The window that lists every Smelt Recipe that is not a Hidden Recipe as one row, in Mining skill order, with its prices, Raw Value, Smelted Value, Verdict, and Smelt Profit.
 _Avoid_: Chart, popup, grid
 
 **Shopping List**:
-The Buy to Smelt purchase list: one entry for each auction Reagent with a Buyable Quantity, carrying its Max Buy Price and that quantity. It covers only Smelt Recipes that are a Known Recipe of at least one of the player's characters.
+The Buy to Smelt purchase list: one entry for each auction Reagent with a Buyable Quantity, carrying its Max Buy Price and that quantity. It covers only Smelt Recipes that are a Known Recipe of at least one Mailable Character and are not a Hidden Recipe.
 _Avoid_: Buy list, snipe list
