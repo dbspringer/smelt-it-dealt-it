@@ -2,20 +2,22 @@ local addonName, ns = ...
 local L = ns.L
 local Smelt = ns.Smelt
 local PriceSource = ns.PriceSource
+local Config = ns.Config
+local Items = ns.Items
 
--- The Smelt Table window: one row for each Smelt Recipe, in Mining skill order.
+-- The Smelt Table window: one row for each Smelt Recipe that is not hidden,
+-- in Mining skill order.
 local SmeltTable = {}
 ns.SmeltTable = SmeltTable
-
--- Fixed until the settings slice makes them player choices.
-local STALE_DAYS = 1
-local THRESHOLD = Smelt.DEFAULT_THRESHOLD
 
 local FRAME_NAME = "SmeltItDealtItFrame"
 local ROW_HEIGHT = 24
 local ICON_SIZE = 18
 local PADDING = 8
+-- ButtonFrameTemplate's title bar and borders around the inset.
+local CHROME_WIDTH, CHROME_HEIGHT = 12, 70
 local STALE_ICON = "Interface\\DialogFrame\\UI-Dialog-Icon-AlertNew"
+local OPTIONS_ICON = "Interface\\Buttons\\UI-OptionsButton"
 local NO_VALUE = "-"
 
 local COLUMNS = {
@@ -49,8 +51,9 @@ local VERDICTS = {
 }
 
 local frame
+-- One row for every Smelt Recipe, keyed on the bar. Hidden ones stay built.
 local rows = {}
-local itemNames = {}
+local visibleRows = {}
 
 -- GetMoneyString takes whole, positive copper, so the sign is added here.
 -- Rounding toward zero matches Auctionator's display.
@@ -67,30 +70,15 @@ local function SignedMoney(copper)
     return Money(copper)
 end
 
-local function ItemName(itemID)
-    return itemNames[itemID] or RETRIEVING_ITEM_INFO
-end
-
 local function CountedName(itemID, count)
     if count > 1 then
-        return string.format(L["%s x%d"], ItemName(itemID), count)
+        return string.format(L["%s x%d"], Items.Name(itemID), count)
     end
-    return ItemName(itemID)
-end
-
--- Names can load after the first call, so the caller gets told when they do.
-local function LoadItemName(itemID, onLoad)
-    local item = Item:CreateFromItemID(itemID)
-    item:ContinueOnItemLoad(function()
-        itemNames[itemID] = item:GetItemName()
-        if onLoad then
-            onLoad()
-        end
-    end)
+    return Items.Name(itemID)
 end
 
 local function IsStale(price, isVendor, age)
-    return price ~= nil and not isVendor and (age == nil or age >= STALE_DAYS)
+    return price ~= nil and not isVendor and (age == nil or age >= Config.StaleDays())
 end
 
 local function AgeText(isVendor, age)
@@ -129,7 +117,7 @@ end
 local function ShowRowTooltip(row)
     local recipe = row.recipe
     GameTooltip:SetOwner(row, "ANCHOR_RIGHT")
-    GameTooltip_SetTitle(GameTooltip, ItemName(recipe.bar))
+    GameTooltip_SetTitle(GameTooltip, Items.Name(recipe.bar))
     EachItem(recipe, AddPriceLine)
     if recipe.blackForge then
         GameTooltip:AddLine(L["Smelt only at the Black Forge."], 1, 1, 1, true)
@@ -141,6 +129,12 @@ local function ShowHeaderTooltip(cell)
     GameTooltip:SetOwner(cell, "ANCHOR_TOP")
     GameTooltip_SetTitle(GameTooltip, cell.column.header)
     GameTooltip:AddLine(cell.column.tip, 1, 1, 1, true)
+    GameTooltip:Show()
+end
+
+local function ShowOptionsTooltip(button)
+    GameTooltip:SetOwner(button, "ANCHOR_TOP")
+    GameTooltip_SetTitle(GameTooltip, L["Options"])
     GameTooltip:Show()
 end
 
@@ -161,8 +155,16 @@ local function AddIcon(parent, itemID, x)
     local icon = parent:CreateTexture(nil, "ARTWORK")
     icon:SetSize(ICON_SIZE, ICON_SIZE)
     icon:SetPoint("LEFT", parent, "LEFT", x, 0)
-    icon:SetTexture(C_Item.GetItemIconByID(itemID))
+    icon:SetTexture(Items.Icon(itemID))
     return icon
+end
+
+local function ColumnByKey(key)
+    for _, column in ipairs(COLUMNS) do
+        if column.key == key then
+            return column
+        end
+    end
 end
 
 local function CreateHeader(parent)
@@ -183,18 +185,9 @@ local function CreateHeader(parent)
     return header
 end
 
-local function ColumnByKey(key)
-    for _, column in ipairs(COLUMNS) do
-        if column.key == key then
-            return column
-        end
-    end
-end
-
-local function CreateRow(parent, recipe, index)
+local function CreateRow(parent, recipe)
     local row = CreateFrame("Frame", nil, parent)
     row:SetSize(TABLE_WIDTH, ROW_HEIGHT)
-    row:SetPoint("TOPLEFT", PADDING, -PADDING - index * ROW_HEIGHT)
     row:EnableMouse(true)
     row:SetScript("OnEnter", ShowRowTooltip)
     row:SetScript("OnLeave", HideTooltip)
@@ -211,7 +204,7 @@ local function CreateRow(parent, recipe, index)
         row.bar:SetText(CountedName(recipe.bar, recipe.barsMade))
     end
     ShowBarName()
-    LoadItemName(recipe.bar, ShowBarName)
+    Items.Load(recipe.bar, ShowBarName)
 
     local x = ColumnByKey("reagents").x
     for _, reagent in ipairs(recipe.reagents) do
@@ -221,7 +214,7 @@ local function CreateRow(parent, recipe, index)
             count:SetPoint("BOTTOMRIGHT", icon, "BOTTOMRIGHT", 2, -2)
             count:SetText(reagent[2])
         end
-        LoadItemName(reagent[1])
+        Items.Load(reagent[1])
         x = x + ICON_SIZE + 6
     end
 
@@ -237,7 +230,7 @@ local function CreateRow(parent, recipe, index)
 end
 
 local function ShowRow(row)
-    local result = Smelt.Evaluate(row.recipe, PriceSource.Lookup, THRESHOLD)
+    local result = Smelt.Evaluate(row.recipe, PriceSource.Lookup, Config.Threshold())
 
     local stale = false
     EachItem(row.recipe, function(itemID)
@@ -269,30 +262,53 @@ function SmeltTable.NoPriceSourceMessage()
     return string.format(L["Smelt It/Dealt It needs a price addon. Install or enable one of: %s"], names)
 end
 
+-- The table shows either rows or one line that says why it has none.
+local function ShowMessage(text)
+    frame.content:SetShown(text == nil)
+    frame.message:SetText(text or "")
+    frame.message:SetShown(text ~= nil)
+end
+
 function SmeltTable.Refresh()
     if not frame or not frame:IsShown() then
         return
     end
 
     if not PriceSource.IsAvailable() then
-        frame.content:Hide()
-        frame.message:SetText(SmeltTable.NoPriceSourceMessage())
-        frame.message:Show()
+        ShowMessage(SmeltTable.NoPriceSourceMessage())
+        return
+    end
+    if #visibleRows == 0 then
+        ShowMessage(L["Every Smelt Recipe is hidden. Show some in the options."])
         return
     end
 
-    frame.content:Show()
     local anyPrices = false
-    for _, row in ipairs(rows) do
+    for _, row in ipairs(visibleRows) do
         anyPrices = ShowRow(row) or anyPrices
     end
     if anyPrices then
-        frame.message:Hide()
+        ShowMessage(nil)
     else
-        local text = L["Scan the auction house with %s to see prices."]
-        frame.message:SetText(string.format(text, PriceSource.ActiveName()))
-        frame.message:Show()
+        ShowMessage(string.format(L["Scan the auction house with %s to see prices."], PriceSource.ActiveName()))
     end
+end
+
+-- Stacks the visible rows and fits the window to them, at least one row high
+-- so the message has room.
+local function Layout()
+    visibleRows = {}
+    for _, row in pairs(rows) do
+        row:Hide()
+    end
+    for index, recipe in ipairs(Config.VisibleRecipes()) do
+        local row = rows[recipe.bar]
+        row:SetPoint("TOPLEFT", PADDING, -PADDING - index * ROW_HEIGHT)
+        row:Show()
+        table.insert(visibleRows, row)
+    end
+    local tableHeight = (math.max(#visibleRows, 1) + 1) * ROW_HEIGHT + 2 * PADDING
+    frame:SetSize(TABLE_WIDTH + 2 * PADDING + CHROME_WIDTH, tableHeight + CHROME_HEIGHT)
 end
 
 local function SavePosition()
@@ -308,6 +324,19 @@ local function RestorePosition()
     else
         frame:SetPoint("CENTER")
     end
+end
+
+local function CreateOptionsButton()
+    local button = CreateFrame("Button", nil, frame)
+    button:SetSize(16, 16)
+    button:SetPoint("RIGHT", frame.CloseButton, "LEFT", -2, 0)
+    button:SetNormalTexture(OPTIONS_ICON)
+    button:SetHighlightTexture(OPTIONS_ICON, "ADD")
+    button:SetScript("OnClick", function()
+        ns.Options.Open()
+    end)
+    button:SetScript("OnEnter", ShowOptionsTooltip)
+    button:SetScript("OnLeave", HideTooltip)
 end
 
 local function Create()
@@ -331,15 +360,13 @@ local function Create()
         SavePosition()
     end)
     table.insert(UISpecialFrames, FRAME_NAME)
-
-    local tableHeight = (#ns.Recipes + 1) * ROW_HEIGHT + 2 * PADDING
-    frame:SetSize(TABLE_WIDTH + 2 * PADDING + 12, tableHeight + 70)
+    CreateOptionsButton()
 
     frame.content = CreateFrame("Frame", nil, frame.Inset)
     frame.content:SetAllPoints()
     CreateHeader(frame.content)
-    for index, recipe in ipairs(ns.Recipes) do
-        table.insert(rows, CreateRow(frame.content, recipe, index))
+    for _, recipe in ipairs(ns.Recipes) do
+        rows[recipe.bar] = CreateRow(frame.content, recipe)
     end
 
     frame.message = frame.Inset:CreateFontString(nil, "OVERLAY", "GameFontNormal")
@@ -348,6 +375,7 @@ local function Create()
     frame.message:SetJustifyH("LEFT")
 
     frame:SetScript("OnShow", SmeltTable.Refresh)
+    Layout()
     RestorePosition()
 end
 
@@ -362,4 +390,12 @@ end
 -- while the table is open.
 PriceSource.OnChange(function()
     SmeltTable.Refresh()
+end)
+
+-- Settings apply at once: a slider or checkbox redraws the open table.
+Config.OnChange(function()
+    if frame then
+        Layout()
+        SmeltTable.Refresh()
+    end
 end)

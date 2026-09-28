@@ -9,9 +9,6 @@ ns.Smelt = Smelt
 -- Verdict keys, not display text: the Smelt Table maps them to ns.L strings.
 Smelt.SMELT, Smelt.SELL_RAW, Smelt.TOSS_UP = "SMELT", "SELL_RAW", "TOSS_UP"
 
--- 5% of the higher value or 1 silver for one cast, whichever is larger.
-Smelt.DEFAULT_THRESHOLD = { percent = 0.05, minimum = 100 }
-
 -- The auction house keeps 5% of a sale, and nothing of a purchase.
 local AFTER_AH_CUT = 0.95
 
