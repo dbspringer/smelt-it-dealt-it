@@ -1,0 +1,7 @@
+## Interface: 16001
+## Title: Smelt It/Dealt It
+## Notes: Shows if an ore is worth more smelted into a bar or sold raw.
+## Author: KidMoxie
+## Version: @project-version@
+## X-License: MIT
+## X-Website: https://github.com/dbspringer/smelt-it-dealt-it
