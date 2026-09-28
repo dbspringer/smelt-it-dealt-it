@@ -30,7 +30,7 @@ ns.Recipes = {
     -- Thorium Ore -> Thorium Bar
     { bar = 12359, barsMade = 1, spellID = 16153, reagents = { { 10620, 1 } } },
     -- 8 Dark Iron Ore -> Dark Iron Bar, only at the Black Forge
-    { bar = 11371, barsMade = 1, spellID = 14891, reagents = { { 11370, 8 } } },
+    { bar = 11371, barsMade = 1, spellID = 14891, reagents = { { 11370, 8 } }, blackForge = true },
     -- Elementium Ore + 10 Arcanite Bar + Fiery Core + 3 Elemental Flux -> Elementium Bar
     {
         bar = 17771,
