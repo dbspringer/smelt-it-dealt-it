@@ -4,7 +4,8 @@ A WoW Forever addon to check more valuable to smelt ore or sell it.
 ## Develop
 
 Symlink the repo into the Forever AddOns folder as `SmeltItDealtIt`
-(`_classic_beta_/Interface/AddOns`). Lint with `luacheck .` and package with
+(`_classic_beta_/Interface/AddOns`). Lint with `luacheck .`, run the specs with
+`busted` (on Lua 5.1 or LuaJIT, since that's what WoW runs), and package with
 the BigWigs packager. Releases are plain numbers that go up by one each time
 (`1`, `2`, `3`), and pushing that number as a tag cuts the release.
 
