@@ -7,6 +7,7 @@ Forever is the `_classic_beta_` client (1.60.x, Interface 16001), installed at `
 
 - **Taint**: attach UI through addon APIs and own frames; keep Blizzard frames untouched.
 - **Reference code**: the installed Auctionator and Baganator sources under `Interface/AddOns/` are the ground truth for their APIs.
+- **Auctionator license**: Auctionator is "All Rights Reserved". Call only `Auctionator.API.v1`, through the price-source module (ADR 0001), and write our own code for anything else. `~/workspaces/dev/CraftSim` is an open reference for the same integrations.
 
 ## Agent skills
 
