@@ -17,7 +17,9 @@ local PADDING = 8
 -- ButtonFrameTemplate's title bar and borders around the inset.
 local CHROME_WIDTH, CHROME_HEIGHT = 12, 70
 local STALE_ICON = "Interface\\DialogFrame\\UI-Dialog-Icon-AlertNew"
-local OPTIONS_ICON = "Interface\\Buttons\\UI-OptionsButton"
+-- An item icon from vanilla, so every client has it. The UI gear textures
+-- differ between clients, and Forever lacks the classic one.
+local OPTIONS_ICON = "Interface\\Icons\\INV_Misc_Gear_01"
 local NO_VALUE = "-"
 
 local COLUMNS = {
@@ -330,8 +332,14 @@ local function CreateOptionsButton()
     local button = CreateFrame("Button", nil, frame)
     button:SetSize(16, 16)
     button:SetPoint("RIGHT", frame.CloseButton, "LEFT", -2, 0)
+    -- The template's title bar art sits above a plain child frame and would
+    -- cover the icon, so it goes on the close button's level.
+    button:SetFrameLevel(frame.CloseButton:GetFrameLevel())
     button:SetNormalTexture(OPTIONS_ICON)
     button:SetHighlightTexture(OPTIONS_ICON, "ADD")
+    -- Crop the item icon's border.
+    button:GetNormalTexture():SetTexCoord(0.08, 0.92, 0.08, 0.92)
+    button:GetHighlightTexture():SetTexCoord(0.08, 0.92, 0.08, 0.92)
     button:SetScript("OnClick", function()
         ns.Options.Open()
     end)
