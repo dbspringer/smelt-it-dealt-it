@@ -45,7 +45,7 @@ The number of whole days since the Price Source last saw an item on the auction 
 _Avoid_: Scan age, freshness
 
 **Stale Price**:
-A price whose Price Age is at or above the stale limit (default 1 day, so anything not seen today). A Stale Price still gives a Verdict, with a warning.
+An auction price whose Price Age is at or above the stale limit (default 1 day, so anything not seen today), or unknown. A Stale Price still gives a Verdict, with a warning. A vendor price is never stale.
 _Avoid_: Old data, outdated price
 
 **No Data**:

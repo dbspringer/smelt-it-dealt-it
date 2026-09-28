@@ -3,8 +3,16 @@
 ## Notes: Shows if an ore is worth more smelted into a bar or sold raw.
 ## Author: KidMoxie
 ## Version: @project-version@
+## OptionalDeps: Auctionator
+## SavedVariables: SmeltItDealtItDB
 ## X-License: MIT
 ## X-Website: https://github.com/dbspringer/smelt-it-dealt-it
 
+locales/enUS.lua
 src/Recipes.lua
 src/Smelt.lua
+src/PriceSource.lua
+# Price Source adapters, in priority order.
+src/Auctionator.lua
+src/SmeltTable.lua
+SmeltItDealtIt.lua
