@@ -4,7 +4,7 @@
 
 First release, for WoW: Forever (the 1.60 client).
 
-- See at a glance whether each ore is worth more smelted or sold raw. The Smelt Table lists every smelt, including Forever's new Azerothium and Heavy Thorium bars, with what the ore and the bars sell for after the 5% auction house cut, and a verdict: Smelt, Sell Raw, or Toss-up when the difference isn't worth your time
+- See at a glance whether each ore is worth more smelted or sold raw. The Smelt Table lists every smelt, including Forever's new Azerothium and Heavy Thorium bars (their exact recipes are still being worked out, so the addon corrects itself once you've learned them), with what the ore and the bars sell for after the 5% auction house cut, and a verdict: Smelt, Sell Raw, or Toss-up when the difference isn't worth your time
 - See what you'd make buying the ore at today's prices, smelting it, and selling the bars
 - Get prices from Auctionator. Hover a row to see each price and how long ago it was seen, and a warning icon shows when a price is older than you'd like (1 hour by default)
 - Grey out the smelts none of your characters can do, once a miner has opened their Mining window, and see who can do the rest
