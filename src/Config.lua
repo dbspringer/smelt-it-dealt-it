@@ -65,7 +65,7 @@ end
 -- In Mining skill order, the Smelt Table's row order.
 function Config.VisibleRecipes()
     local visible = {}
-    for _, recipe in ipairs(ns.Recipes) do
+    for _, recipe in ipairs(ns.Recipes.All()) do
         if not Config.IsHidden(recipe.bar) then
             table.insert(visible, recipe)
         end
