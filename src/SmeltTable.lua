@@ -394,6 +394,17 @@ function SmeltTable.Toggle()
     frame:SetShown(not frame:IsShown())
 end
 
+function SmeltTable.IsShown()
+    return frame ~= nil and frame:IsShown()
+end
+
+function SmeltTable.Show()
+    if not frame then
+        Create()
+    end
+    frame:Show()
+end
+
 -- Auctionator fires this after every search it processes, so it only redraws
 -- while the table is open.
 PriceSource.OnChange(function()

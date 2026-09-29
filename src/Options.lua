@@ -13,6 +13,8 @@ local RECIPE_COLUMN_WIDTH = 260
 local ICON_SIZE = 18
 
 local category
+-- Whether Options.Open closed an open Smelt Table.
+local reopenTable = false
 
 local function AddSectionHeader(panel, anchor, text)
     local header = panel:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
@@ -202,6 +204,16 @@ function Options.Register()
 
     category = Settings.RegisterCanvasLayoutCategory(panel, title)
     Settings.RegisterAddOnCategory(category)
+
+    -- A post-hook only: it changes nothing on Blizzard's frame. Closing the
+    -- panel goes on to hide the Smelt Table after OnHide, so the table comes
+    -- back on the next frame instead.
+    SettingsPanel:HookScript("OnHide", function()
+        if reopenTable then
+            reopenTable = false
+            C_Timer.After(0, ns.SmeltTable.Show)
+        end
+    end)
 end
 
 function Options.Open()
@@ -210,5 +222,8 @@ function Options.Open()
         UIErrorsFrame:AddMessage(ERR_NOT_IN_COMBAT, 1, 0.1, 0.1)
         return
     end
+    -- Opening the options closes the Smelt Table, and the options panel would
+    -- cover it anyway, so it comes back when the options close.
+    reopenTable = ns.SmeltTable.IsShown()
     Settings.OpenToCategory(category:GetID())
 end
