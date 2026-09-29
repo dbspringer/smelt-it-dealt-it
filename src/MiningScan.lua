@@ -88,9 +88,10 @@ local function Report(problems, unknownNames)
         end
     end
     if #names > 0 then
-        local list = table.concat(names, LIST_DELIMITER or ", ")
-        local text = L["Smelt It/Dealt It: these smelts differ from what the addon knows. Please report them: %s"]
-        print(string.format(text, list))
+        print(L["Smelt It/Dealt It: possible new smelts detected:"])
+        for _, name in ipairs(names) do
+            print(string.format(L["- %s"], name))
+        end
     end
 end
 
