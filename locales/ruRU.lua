@@ -21,14 +21,16 @@ end
 --   Stale: устаревший
 --   No Data: Нет данных
 --   AH Cut: сбор аукциона
+--   Raw Value, column header: Сырьё
+--   Smelted Value, column header: Слитки
 --   Address: вы/ваш
 
 local L = ns.L
 
 L["Bar"] = "Слиток"
 L["Reagents"] = "Реагенты"
-L["Raw Value"] = "Стоимость сырья"
-L["Smelted Value"] = "Стоимость слитков"
+L["Raw Value"] = "Сырьё"
+L["Smelted Value"] = "Слитки"
 L["Difference"] = "Разница"
 L["Verdict"] = "Вердикт"
 L["Smelt Profit"] = "Прибыль"

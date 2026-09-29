@@ -22,14 +22,16 @@ end
 --   Stale: obsoleto
 --   No Data: Sin datos
 --   AH Cut: comisión de la casa de subastas
+--   Raw Value, column header: Sin fundir
+--   Smelted Value, column header: Lingotes
 --   Address: tú
 
 local L = ns.L
 
 L["Bar"] = "Lingote"
 L["Reagents"] = "Componentes"
-L["Raw Value"] = "Valor sin fundir"
-L["Smelted Value"] = "Valor en lingotes"
+L["Raw Value"] = "Sin fundir"
+L["Smelted Value"] = "Lingotes"
 L["Difference"] = "Diferencia"
 L["Verdict"] = "Veredicto"
 L["Smelt Profit"] = "Beneficio"

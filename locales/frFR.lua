@@ -21,14 +21,16 @@ end
 --   Stale: obsolète
 --   No Data: Aucune donnée
 --   AH Cut: taxe de l'hôtel des ventes
+--   Raw Value, column header: En l'état
+--   Smelted Value, column header: Lingots
 --   Address: vous
 
 local L = ns.L
 
 L["Bar"] = "Lingot"
 L["Reagents"] = "Composants"
-L["Raw Value"] = "Valeur en l'état"
-L["Smelted Value"] = "Valeur des lingots"
+L["Raw Value"] = "En l'état"
+L["Smelted Value"] = "Lingots"
 L["Difference"] = "Écart"
 L["Verdict"] = "Verdict"
 L["Smelt Profit"] = "Profit"

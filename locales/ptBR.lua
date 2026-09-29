@@ -21,14 +21,16 @@ end
 --   Stale: desatualizado
 --   No Data: Sem dados
 --   AH Cut: taxa da casa de leilões
+--   Raw Value, column header: Sem fundir
+--   Smelted Value, column header: Barras
 --   Address: você
 
 local L = ns.L
 
 L["Bar"] = "Barra"
 L["Reagents"] = "Reagentes"
-L["Raw Value"] = "Valor sem fundir"
-L["Smelted Value"] = "Valor em barras"
+L["Raw Value"] = "Sem fundir"
+L["Smelted Value"] = "Barras"
 L["Difference"] = "Diferença"
 L["Verdict"] = "Veredito"
 L["Smelt Profit"] = "Lucro"
