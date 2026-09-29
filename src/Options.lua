@@ -8,17 +8,20 @@ local Options = {}
 ns.Options = Options
 
 local SLIDER_LEFT = 180
-local RECIPE_COLUMNS = 2
-local RECIPE_COLUMN_WIDTH = 260
+-- The panel has a fixed height, so the recipes take three columns.
+local RECIPE_COLUMNS = 3
+local RECIPE_COLUMN_WIDTH = 200
+local SECTION_GAP = 20
 local ICON_SIZE = 18
 
 local category
 -- Whether Options.Open closed an open Smelt Table.
 local reopenTable = false
 
-local function AddSectionHeader(panel, anchor, text)
+-- A checkbox sits 4 left of the text column, so a header below one passes 4.
+local function AddSectionHeader(panel, anchor, text, x)
     local header = panel:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
-    header:SetPoint("TOPLEFT", anchor, "BOTTOMLEFT", 0, -30)
+    header:SetPoint("TOPLEFT", anchor, "BOTTOMLEFT", x or 0, -SECTION_GAP)
     header:SetText(text)
     return header
 end
@@ -151,12 +154,13 @@ local function AddAccessSection(panel, anchor)
         panel, description, 10, "ahButton", L["Show a button on the auction house"]
     )
     local compartment, refreshCompartment = AddSettingCheckbox(
-        panel, auctionHouse, 4, "compartment", L["Show in the addon compartment"]
+        panel, auctionHouse, 0, "compartment", L["Show in the addon compartment"]
     )
-    -- The checkboxes sit 4 to the left of the text column.
-    compartment:SetPoint("TOPLEFT", auctionHouse, "BOTTOMLEFT", 0, -4)
+    -- Side by side, to keep the panel short.
+    compartment:ClearAllPoints()
+    compartment:SetPoint("LEFT", auctionHouse, "LEFT", 2 * RECIPE_COLUMN_WIDTH - 100, 0)
 
-    return compartment, function()
+    return auctionHouse, function()
         refreshAuctionHouse()
         refreshCompartment()
     end
@@ -188,18 +192,21 @@ local function AddRecipeCheckbox(panel, header, recipe, index)
     return checkbox
 end
 
-local function AddRecipesSection(panel, anchor)
-    local header = AddSectionHeader(panel, anchor, L["Smelt Recipes"])
+local function AddRecipesSection(panel, anchor, x)
+    local header = AddSectionHeader(panel, anchor, L["Smelt Recipes"], x)
     local description = AddBodyText(panel, header, L["Unchecked recipes leave the Smelt Table."])
 
     local checkboxes = {}
-    local last
+    -- The first checkbox of the last line, so what follows lines up on the left.
+    local bottom
     for index, recipe in ipairs(ns.Recipes.All()) do
         checkboxes[recipe.bar] = AddRecipeCheckbox(panel, description, recipe, index)
-        last = checkboxes[recipe.bar]
+        if (index - 1) % RECIPE_COLUMNS == 0 then
+            bottom = checkboxes[recipe.bar]
+        end
     end
 
-    return last, function()
+    return bottom, function()
         for bar, checkbox in pairs(checkboxes) do
             checkbox:SetChecked(not Config.IsHidden(bar))
         end
@@ -219,7 +226,7 @@ function Options.Register()
     local verdictBottom, refreshVerdict = AddVerdictSection(panel, header)
     local pricesBottom, refreshPrices = AddPricesSection(panel, verdictBottom)
     local accessBottom, refreshAccess = AddAccessSection(panel, pricesBottom)
-    local recipesBottom, refreshRecipes = AddRecipesSection(panel, accessBottom)
+    local recipesBottom, refreshRecipes = AddRecipesSection(panel, accessBottom, 4)
 
     local function Refresh()
         refreshVerdict()
@@ -229,7 +236,7 @@ function Options.Register()
     end
 
     local reset = CreateFrame("Button", nil, panel, "UIPanelButtonTemplate")
-    reset:SetPoint("TOPLEFT", recipesBottom, "BOTTOMLEFT", 4, -24)
+    reset:SetPoint("TOPLEFT", recipesBottom, "BOTTOMLEFT", 4, -16)
     reset:SetText(L["Reset to defaults"])
     reset:SetWidth(reset:GetTextWidth() + 40)
     reset:SetScript("OnClick", function()
