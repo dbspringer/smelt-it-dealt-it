@@ -16,6 +16,12 @@ function Items.Icon(itemID)
 end
 
 function Items.Load(itemID, onLoad)
+    if names[itemID] then
+        if onLoad then
+            onLoad()
+        end
+        return
+    end
     local item = Item:CreateFromItemID(itemID)
     item:ContinueOnItemLoad(function()
         names[itemID] = item:GetItemName()

@@ -27,6 +27,8 @@ local STALE_ICON = "Interface\\DialogFrame\\UI-Dialog-Icon-AlertNew"
 -- differ between clients, and Forever lacks the classic one.
 local OPTIONS_ICON = "Interface\\Icons\\INV_Misc_Gear_01"
 local NO_VALUE = "-"
+-- The most Reagents a Smelt Recipe has (Elementium).
+local MAX_REAGENTS = 4
 
 local COLUMNS = {
     { key = "bar", width = 180, justify = "LEFT", header = L["Bar"],
@@ -179,7 +181,9 @@ local function AddIcon(parent, itemID, x)
     local icon = parent:CreateTexture(nil, "ARTWORK")
     icon:SetSize(ICON_SIZE, ICON_SIZE)
     icon:SetPoint("LEFT", parent, "LEFT", x, 0)
-    icon:SetTexture(Items.Icon(itemID))
+    if itemID then
+        icon:SetTexture(Items.Icon(itemID))
+    end
     return icon
 end
 
@@ -215,8 +219,8 @@ local function CreateRow(parent, recipe)
     row:EnableMouse(true)
     row:SetScript("OnEnter", ShowRowTooltip)
     row:SetScript("OnLeave", HideTooltip)
-    -- The reagent icons show the recipe as it was when the row was built; the
-    -- values and tooltip read the current one, which a correction can change.
+    -- Only the identity is fixed. Everything else comes from Recipes.Get on
+    -- each refresh, since a Mining window scan can correct the recipe.
     row.barID = recipe.bar
 
     local barColumn = ColumnByKey("bar")
@@ -226,21 +230,18 @@ local function CreateRow(parent, recipe)
     row.bar:SetWidth(barColumn.width - ICON_SIZE - 10)
     row.bar:SetJustifyH("LEFT")
     row.bar:SetWordWrap(false)
-    local function ShowBarName()
-        row.bar:SetText(CountedName(recipe.bar, recipe.barsMade))
-    end
-    ShowBarName()
-    Items.Load(recipe.bar, ShowBarName)
+    Items.Load(recipe.bar, function()
+        local current = Recipes.Get(recipe.bar)
+        row.bar:SetText(CountedName(current.bar, current.barsMade))
+    end)
 
+    row.reagents = {}
     local x = ColumnByKey("reagents").x
-    for _, reagent in ipairs(recipe.reagents) do
-        local icon = AddIcon(row, reagent[1], x)
-        if reagent[2] > 1 then
-            local count = row:CreateFontString(nil, "OVERLAY", "NumberFontNormalSmall")
-            count:SetPoint("BOTTOMRIGHT", icon, "BOTTOMRIGHT", 2, -2)
-            count:SetText(reagent[2])
-        end
-        Items.Load(reagent[1])
+    for index = 1, MAX_REAGENTS do
+        local icon = AddIcon(row, nil, x)
+        local count = row:CreateFontString(nil, "OVERLAY", "NumberFontNormalSmall")
+        count:SetPoint("BOTTOMRIGHT", icon, "BOTTOMRIGHT", 2, -2)
+        row.reagents[index] = { icon = icon, count = count }
         x = x + ICON_SIZE + 6
     end
 
@@ -255,8 +256,23 @@ local function CreateRow(parent, recipe)
     return row
 end
 
+local function ShowRecipe(row, recipe)
+    row.bar:SetText(CountedName(recipe.bar, recipe.barsMade))
+    for index, slot in ipairs(row.reagents) do
+        local reagent = recipe.reagents[index]
+        slot.icon:SetShown(reagent ~= nil)
+        slot.count:SetShown(reagent ~= nil)
+        if reagent then
+            slot.icon:SetTexture(Items.Icon(reagent[1]))
+            slot.count:SetText(reagent[2] > 1 and reagent[2] or "")
+            Items.Load(reagent[1])
+        end
+    end
+end
+
 local function ShowRow(row)
     local recipe = Recipes.Get(row.barID)
+    ShowRecipe(row, recipe)
     local result = Smelt.Evaluate(recipe, PriceSource.Lookup, Config.Threshold())
 
     local unknown = Characters.AnyRecorded(ns.player) and #Characters.KnownBy(recipe.bar, ns.player) == 0

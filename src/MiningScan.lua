@@ -56,32 +56,28 @@ local function GameRecipe(spellID)
 end
 
 -- Checks against the built-in recipe, not a saved correction, so a patch
--- that fixes the built-in data clears the correction again.
-local function Check(builtIn, problems)
+-- that fixes the built-in data clears the correction again. Returns whether
+-- the game differs.
+local function Check(builtIn)
     local game = GameRecipe(builtIn.spellID)
     if not game then
-        return
+        return false
     end
     local result, corrected = RecipeCheck.Compare(builtIn, game)
     if result == RecipeCheck.SAME then
         Recipes.ClearCorrection(builtIn.bar)
+        return false
     elseif result == RecipeCheck.DIFFERENT then
         Recipes.Correct(builtIn.bar, corrected)
-        table.insert(problems, builtIn.bar)
-    else
-        table.insert(problems, builtIn.bar)
     end
+    return true
 end
 
-local function Report(problems, unknownNames)
+-- Recipe names come from the scan itself, localized and ready, where an item
+-- name could still be loading.
+local function Report(recipeNames)
     local names = {}
-    for _, bar in ipairs(problems) do
-        if not reported[bar] then
-            reported[bar] = true
-            table.insert(names, ns.Items.Name(bar))
-        end
-    end
-    for _, name in ipairs(unknownNames) do
+    for _, name in ipairs(recipeNames) do
         if not reported[name] then
             reported[name] = true
             table.insert(names, name)
@@ -106,16 +102,18 @@ local function Scan()
         bySpell[recipe.spellID] = recipe
     end
 
-    local learned, problems, unknownNames = {}, {}, {}
+    local learned, problems = {}, {}
     for _, spellID in ipairs(C_TradeSkillUI.GetFilteredRecipeIDs()) do
         local info = C_TradeSkillUI.GetRecipeInfo(spellID)
         if info and info.learned then
             local builtIn = bySpell[spellID]
             if builtIn then
                 table.insert(learned, builtIn.bar)
-                Check(builtIn, problems)
+                if Check(builtIn) then
+                    table.insert(problems, info.name)
+                end
             elseif info.categoryID == SMELTED_BARS_CATEGORY then
-                table.insert(unknownNames, info.name)
+                table.insert(problems, info.name)
             end
         end
     end
@@ -126,7 +124,7 @@ local function Scan()
         Characters.Record(ns.player.key, ns.player, learned)
         ns.SmeltTable.CharactersChanged()
     end
-    Report(problems, unknownNames)
+    Report(problems)
 end
 
 -- A login without Mining forgets the character: its smelts are gone.
