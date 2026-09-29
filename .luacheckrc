@@ -12,7 +12,9 @@ globals = {
 }
 
 read_globals = {
+  "AddonCompartmentFrame",
   "Auctionator",
+  "AuctionHouseFrame",
   "ButtonFrameTemplate_HideButtonBar",
   "ButtonFrameTemplate_HidePortrait",
   "C_AddOns",

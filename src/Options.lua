@@ -126,6 +126,42 @@ local function AddPricesSection(panel, anchor)
     return label, BindSlider(panel, slider, "staleDays", Same, Same)
 end
 
+-- A checkbox for a true/false setting, with its label to the right.
+local function AddSettingCheckbox(panel, anchor, gap, name, text)
+    local checkbox = CreateFrame("CheckButton", nil, panel, "UICheckButtonTemplate")
+    checkbox:SetPoint("TOPLEFT", anchor, "BOTTOMLEFT", -4, -gap)
+    checkbox:SetScript("OnClick", function(self)
+        Config.Set(name, self:GetChecked())
+    end)
+    local label = panel:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
+    label:SetPoint("LEFT", checkbox, "RIGHT", 4, 0)
+    label:SetText(text)
+    return checkbox, function()
+        checkbox:SetChecked(Config.Get(name))
+    end
+end
+
+local function AddAccessSection(panel, anchor)
+    local header = AddSectionHeader(panel, anchor, L["Access"])
+    local description = AddBodyText(
+        panel, header, L["/smelt always opens the Smelt Table. These add two more ways in."]
+    )
+
+    local auctionHouse, refreshAuctionHouse = AddSettingCheckbox(
+        panel, description, 10, "ahButton", L["Show a button on the auction house"]
+    )
+    local compartment, refreshCompartment = AddSettingCheckbox(
+        panel, auctionHouse, 4, "compartment", L["Show in the addon compartment"]
+    )
+    -- The checkboxes sit 4 to the left of the text column.
+    compartment:SetPoint("TOPLEFT", auctionHouse, "BOTTOMLEFT", 0, -4)
+
+    return compartment, function()
+        refreshAuctionHouse()
+        refreshCompartment()
+    end
+end
+
 local function AddRecipeCheckbox(panel, header, recipe, index)
     local column = (index - 1) % RECIPE_COLUMNS
     local line = math.floor((index - 1) / RECIPE_COLUMNS)
@@ -182,11 +218,13 @@ function Options.Register()
 
     local verdictBottom, refreshVerdict = AddVerdictSection(panel, header)
     local pricesBottom, refreshPrices = AddPricesSection(panel, verdictBottom)
-    local recipesBottom, refreshRecipes = AddRecipesSection(panel, pricesBottom)
+    local accessBottom, refreshAccess = AddAccessSection(panel, pricesBottom)
+    local recipesBottom, refreshRecipes = AddRecipesSection(panel, accessBottom)
 
     local function Refresh()
         refreshVerdict()
         refreshPrices()
+        refreshAccess()
         refreshRecipes()
     end
 

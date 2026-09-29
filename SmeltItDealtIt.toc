@@ -3,6 +3,7 @@
 ## Notes: Shows if an ore is worth more smelted into a bar or sold raw.
 ## Author: KidMoxie
 ## Version: @project-version@
+## IconTexture: Interface\Icons\INV_Ingot_03
 ## OptionalDeps: Auctionator
 ## SavedVariables: SmeltItDealtItDB
 ## X-License: MIT
@@ -21,4 +22,5 @@ src/Auctionator.lua
 src/SmeltTable.lua
 src/MiningScan.lua
 src/Options.lua
+src/Access.lua
 SmeltItDealtIt.lua
