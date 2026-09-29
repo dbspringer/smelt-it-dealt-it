@@ -21,8 +21,11 @@ local function PriceOf(prices)
     end
 end
 
+-- The default Toss-up Threshold: 5% or 1 silver, whichever is larger.
+local THRESHOLD = { percent = 0.05, minimum = 100 }
+
 local function Evaluate(recipe, prices, threshold)
-    return Smelt.Evaluate(recipe, PriceOf(prices), threshold or Smelt.DEFAULT_THRESHOLD)
+    return Smelt.Evaluate(recipe, PriceOf(prices), threshold or THRESHOLD)
 end
 
 -- 0.95 isn't exact in binary floating point.

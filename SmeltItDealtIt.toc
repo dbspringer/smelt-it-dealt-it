@@ -11,8 +11,11 @@
 locales/enUS.lua
 src/Recipes.lua
 src/Smelt.lua
+src/Config.lua
+src/Items.lua
 src/PriceSource.lua
 # Price Source adapters, in priority order.
 src/Auctionator.lua
 src/SmeltTable.lua
+src/Options.lua
 SmeltItDealtIt.lua
