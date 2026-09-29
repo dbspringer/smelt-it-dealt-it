@@ -33,6 +33,14 @@ describe("Recipe check", function()
         assert.are.equal(2, corrected.barsMade)
     end)
 
+    it("keeps where the smelt must happen when it takes the game's counts", function()
+        local heavyThorium = {
+            bar = 251291, barsMade = 1, spellID = 1306126, reagents = { { 248815, 1 } }, station = "MOLTEN_FOUNDRY",
+        }
+        local _, corrected = RecipeCheck.Compare(heavyThorium, Game(251291, 1, { { 248815, 2 } }))
+        assert.are.equal("MOLTEN_FOUNDRY", corrected.station)
+    end)
+
     it("changes no data when the spell makes a different bar, since the identity is wrong", function()
         local result, corrected = RecipeCheck.Compare(STEEL, Game(9999, 1, { { 3575, 1 }, { 3857, 1 } }))
         assert.are.equal(RecipeCheck.DIFFERENT_BAR, result)
