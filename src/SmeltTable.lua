@@ -42,7 +42,9 @@ local COLUMNS = {
       tip = L["What you get for the bars, after the 5% auction house cut."] },
     { key = "difference", width = 95, header = L["Difference"],
       tip = L["Smelted Value minus Raw Value."] },
-    { key = "verdict", width = 80, header = L["Verdict"],
+    -- Wide enough for the longest translation ("Vender sin fundir"): the
+    -- Verdict is the one column that must never be cut off.
+    { key = "verdict", width = 115, header = L["Verdict"],
       tip = L["Smelt or Sell Raw, or Toss-up when the difference is too small to be worth the time."] },
     { key = "profit", width = 95, header = L["Smelt Profit"],
       tip = L["What you make if you buy the reagents at these prices, smelt them, and sell the bars."] },

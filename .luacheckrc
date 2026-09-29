@@ -28,6 +28,7 @@ read_globals = {
   "GameTooltip",
   "GameTooltip_SetTitle",
   "GetAutoCompleteRealms",
+  "GetLocale",
   "GetMoneyString",
   "GetNormalizedRealmName",
   "GetProfessionInfo",

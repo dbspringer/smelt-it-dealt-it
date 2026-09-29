@@ -1,15 +1,44 @@
 ## Interface: 16001
 ## Title: Smelt It/Dealt It
 ## Notes: Shows if an ore is worth more smelted into a bar or sold raw.
+## Notes-deDE: Zeigt, ob ein Erz mehr wert ist, wenn Ihr es zu Barren verhüttet oder roh verkauft.
+## Notes-esES: Muestra si un mineral vale más fundido en lingote o vendido sin fundir.
+## Notes-esMX: Muestra si un mineral vale más fundido en lingote o vendido sin fundir.
+## Notes-frFR: Indique si un minerai vaut plus fondu en lingot ou vendu en l'état.
+## Notes-koKR: 광석을 주괴로 제련하는 것과 그대로 판매하는 것 중 어느 쪽이 더 이득인지 보여줍니다.
+## Notes-ptBR: Mostra se um minério vale mais fundido em barra ou vendido sem fundir.
+## Notes-ruRU: Показывает, выгоднее ли выплавить руду в слиток или продать её сырьём.
+## Notes-zhCN: 显示矿石熔炼成锭还是直接出售更值钱。
+## Notes-zhTW: 顯示礦石熔鍊成錠還是直接出售更值錢。
 ## Author: KidMoxie
 ## Version: @project-version@
 ## IconTexture: Interface\Icons\INV_Ingot_03
+## Category: Professions
+## Category-enUS: Professions
+## Category-deDE: Berufe
+## Category-esES: Profesiones
+## Category-esMX: Profesiones
+## Category-frFR: Métiers
+## Category-itIT: Professioni
+## Category-koKR: 전문 기술
+## Category-ptBR: Profissões
+## Category-ruRU: Профессии
+## Category-zhCN: 专业
+## Category-zhTW: 專業技能
 ## OptionalDeps: Auctionator
 ## SavedVariables: SmeltItDealtItDB
 ## X-License: MIT
 ## X-Website: https://github.com/dbspringer/smelt-it-dealt-it
 
 locales/enUS.lua
+locales/deDE.lua
+locales/frFR.lua
+locales/esES.lua
+locales/ptBR.lua
+locales/ruRU.lua
+locales/koKR.lua
+locales/zhCN.lua
+locales/zhTW.lua
 src/Recipes.lua
 src/Smelt.lua
 src/Config.lua

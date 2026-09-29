@@ -170,12 +170,8 @@ end
 
 local function AddAccessSection(panel, anchor)
     local header = AddSectionHeader(panel, anchor, L["Access"])
-    local description = AddBodyText(
-        panel, header, L["/smelt always opens the Smelt Table. These add two more ways in."]
-    )
-
     local auctionHouse, refreshAuctionHouse = AddSettingCheckbox(
-        panel, description, 10, "ahButton", L["Show a button on the auction house"]
+        panel, header, 6, "ahButton", L["Show a button on the auction house"]
     )
     local compartment, refreshCompartment = AddSettingCheckbox(
         panel, auctionHouse, 0, "compartment", L["Show in the addon compartment"]
@@ -218,13 +214,12 @@ end
 
 local function AddRecipesSection(panel, anchor, x)
     local header = AddSectionHeader(panel, anchor, L["Smelt Recipes"], x)
-    local description = AddBodyText(panel, header, L["Unchecked recipes leave the Smelt Table."])
 
     local checkboxes = {}
     -- The first checkbox of the last line, so what follows lines up on the left.
     local bottom
     for index, recipe in ipairs(ns.Recipes.All()) do
-        checkboxes[recipe.bar] = AddRecipeCheckbox(panel, description, recipe, index)
+        checkboxes[recipe.bar] = AddRecipeCheckbox(panel, header, recipe, index)
         if (index - 1) % RECIPE_COLUMNS == 0 then
             bottom = checkboxes[recipe.bar]
         end
@@ -268,8 +263,34 @@ function Options.Register()
         Refresh()
     end)
 
+    -- For bug reports: which build, and which translation file is in use.
+    -- A checkout that the packager hasn't touched still has the raw token.
+    local version = C_AddOns.GetAddOnMetadata(addonName, "Version")
+    if version:find("^@") then
+        version = "dev"
+    end
+    local footer = panel:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
+    footer:SetText(string.format(L["Version %s | Locale: %s"], version, GetLocale()))
+
+    -- On the row of the Options window's Close button, which sits below the
+    -- category's area. Its position is read, never changed, each time the
+    -- panel shows, so a Blizzard layout change can't strand the footer.
+    local function PlaceFooter()
+        local _, closeY = SettingsPanel.CloseButton:GetCenter()
+        local bottom = panel:GetBottom()
+        footer:ClearAllPoints()
+        if closeY and bottom then
+            footer:SetPoint("LEFT", panel, "BOTTOMLEFT", 7, closeY - bottom)
+        else
+            footer:SetPoint("BOTTOMLEFT", 7, 16)
+        end
+    end
+
     -- The panel calls this each time it shows the category.
-    panel.OnRefresh = Refresh
+    panel.OnRefresh = function()
+        Refresh()
+        PlaceFooter()
+    end
 
     category = Settings.RegisterCanvasLayoutCategory(panel, title)
     Settings.RegisterAddOnCategory(category)
