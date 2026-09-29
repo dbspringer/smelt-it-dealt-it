@@ -87,4 +87,5 @@ L["Show a button on the auction house"] = "Afficher un bouton à l'hôtel des ve
 L["Show in the addon compartment"] = "Afficher dans le compartiment d'addons"
 L["Smelt Recipes"] = "Recettes de fonte"
 L["Unchecked recipes leave the Smelt Table."] = "Les recettes décochées disparaissent du tableau de fonte."
+L["Version %s | Locale: %s"] = "Version %s | Langue : %s"
 L["Reset to defaults"] = "Rétablir les valeurs par défaut"

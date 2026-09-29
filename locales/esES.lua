@@ -88,4 +88,5 @@ L["Show a button on the auction house"] = "Mostrar un botón en la casa de subas
 L["Show in the addon compartment"] = "Mostrar en el compartimento de addons"
 L["Smelt Recipes"] = "Recetas de fundición"
 L["Unchecked recipes leave the Smelt Table."] = "Las recetas desmarcadas desaparecen de la tabla de fundición."
+L["Version %s | Locale: %s"] = "Versión %s | Idioma: %s"
 L["Reset to defaults"] = "Restablecer predeterminados"

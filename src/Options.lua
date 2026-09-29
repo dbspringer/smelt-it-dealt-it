@@ -268,6 +268,17 @@ function Options.Register()
         Refresh()
     end)
 
+    -- For bug reports: which build, and which translation file is in use.
+    -- A checkout that the packager hasn't touched still has the raw token.
+    local version = C_AddOns.GetAddOnMetadata(addonName, "Version")
+    if version:find("^@") then
+        version = "dev"
+    end
+    local footer = panel:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
+    -- Bottom right, since the full panel's Reset button sits at the bottom left.
+    footer:SetPoint("BOTTOMRIGHT", -12, 16)
+    footer:SetText(string.format(L["Version %s | Locale: %s"], version, GetLocale()))
+
     -- The panel calls this each time it shows the category.
     panel.OnRefresh = Refresh
 

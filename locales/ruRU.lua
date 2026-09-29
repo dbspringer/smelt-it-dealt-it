@@ -87,4 +87,5 @@ L["Show a button on the auction house"] = "Показывать кнопку н�
 L["Show in the addon compartment"] = "Показывать в отсеке аддонов"
 L["Smelt Recipes"] = "Рецепты выплавки"
 L["Unchecked recipes leave the Smelt Table."] = "Снятые рецепты исчезают из таблицы выплавки."
+L["Version %s | Locale: %s"] = "Версия %s | Язык: %s"
 L["Reset to defaults"] = "Сбросить настройки"
