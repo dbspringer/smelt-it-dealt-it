@@ -4,8 +4,11 @@ local Recipes = {}
 ns.Recipes = Recipes
 
 -- Every Smelt Recipe, in Mining skill order, which is also the Smelt Table's
--- row order. Vanilla values from AtlasLootClassic; the Mining window pass
--- checks them against the game and saves a correction where they differ.
+-- row order. Vanilla values from AtlasLootClassic, and Forever's new smelts
+-- from player databases; the Mining window pass checks them against the game
+-- and saves a correction where they differ.
+--
+-- station names a place the smelt needs, for a note in the tooltip.
 --
 -- The bar's item ID is the recipe's identity, and saved variables key on it.
 -- Each recipe makes a different bar, and item IDs are more stable than spell
@@ -33,13 +36,25 @@ Recipes.BUILT_IN = {
     -- Thorium Ore -> Thorium Bar
     { bar = 12359, barsMade = 1, spellID = 16153, reagents = { { 10620, 1 } } },
     -- 8 Dark Iron Ore -> Dark Iron Bar, only at the Black Forge
-    { bar = 11371, barsMade = 1, spellID = 14891, reagents = { { 11370, 8 } }, blackForge = true },
+    { bar = 11371, barsMade = 1, spellID = 14891, reagents = { { 11370, 8 } }, station = "BLACK_FORGE" },
     -- Elementium Ore + 10 Arcanite Bar + Fiery Core + 3 Elemental Flux -> Elementium Bar
     {
         bar = 17771,
         barsMade = 1,
         spellID = 22967,
         reagents = { { 18562, 1 }, { 12360, 10 }, { 17010, 1 }, { 18567, 3 } },
+    },
+    -- New in Forever. The sources give no bar counts or ore count, so 1 is
+    -- assumed until a miner's Mining window corrects it.
+    -- 2 Pitchblende + Coal -> Azerothium Bar (skill 275)
+    { bar = 249726, barsMade = 1, spellID = 1249637, reagents = { { 249426, 2 }, { 3857, 1 } } },
+    -- Heavy Thorium Ore -> Heavy Thorium Bar (skill 300), only at a Molten Foundry
+    {
+        bar = 251291,
+        barsMade = 1,
+        spellID = 1306126,
+        reagents = { { 248815, 1 } },
+        station = "MOLTEN_FOUNDRY",
     },
 }
 

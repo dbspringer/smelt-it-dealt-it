@@ -47,6 +47,6 @@ function RecipeCheck.Compare(recipe, game)
         barsMade = game.barsMade,
         spellID = recipe.spellID,
         reagents = game.reagents,
-        blackForge = recipe.blackForge,
+        station = recipe.station,
     }
 end

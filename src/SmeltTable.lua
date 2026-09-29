@@ -57,6 +57,12 @@ for _, column in ipairs(COLUMNS) do
     TABLE_WIDTH = TABLE_WIDTH + column.width
 end
 
+-- Where a smelt must happen, when it can't be done at any forge.
+local STATION_NOTES = {
+    BLACK_FORGE = L["Smelt only at the Black Forge."],
+    MOLTEN_FOUNDRY = L["Smelt only at a Molten Foundry."],
+}
+
 local VERDICTS = {
     [Smelt.SMELT] = { text = L["Smelt"], color = GREEN_FONT_COLOR },
     [Smelt.SELL_RAW] = { text = L["Sell Raw"], color = RED_FONT_COLOR },
@@ -166,8 +172,8 @@ local function ShowRowTooltip(row)
     GameTooltip_SetTitle(GameTooltip, Items.Name(recipe.bar))
     EachItem(recipe, AddPriceLine)
     AddKnownByLine(recipe.bar)
-    if recipe.blackForge then
-        GameTooltip:AddLine(L["Smelt only at the Black Forge."], 1, 1, 1, true)
+    if recipe.station then
+        GameTooltip:AddLine(STATION_NOTES[recipe.station], 1, 1, 1, true)
     end
     GameTooltip:Show()
 end
