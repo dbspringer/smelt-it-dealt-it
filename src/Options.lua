@@ -109,6 +109,31 @@ local function AddVerdictSection(panel, anchor)
     end
 end
 
+-- The stale limit in hours: fine steps for a day of scanning, then days for
+-- players who scan rarely. The slider moves along the list.
+local STALE_STEPS = { 1, 2, 3, 4, 6, 8, 12, 18, 24, 48, 72, 120, 168, 336 }
+
+local function NearestStaleStep(hours)
+    local nearest = 1
+    for index, step in ipairs(STALE_STEPS) do
+        if math.abs(step - hours) < math.abs(STALE_STEPS[nearest] - hours) then
+            nearest = index
+        end
+    end
+    return nearest
+end
+
+local function StaleText(hours)
+    if hours == 1 then
+        return L["1 hour"]
+    elseif hours < 24 then
+        return string.format(L["%d hours"], hours)
+    elseif hours == 24 then
+        return L["1 day"]
+    end
+    return string.format(L["%d days"], hours / 24)
+end
+
 local function AddPricesSection(panel, anchor)
     local header = AddSectionHeader(panel, anchor, L["Prices"])
     local description = AddBodyText(
@@ -118,15 +143,14 @@ local function AddPricesSection(panel, anchor)
     )
 
     local label, slider = AddSliderRow(
-        panel, description, 30, L["Stale after"], 1, 14, L["Today only"], L["Two weeks"],
-        function(days)
-            if days == 1 then
-                return L["1 day"]
-            end
-            return string.format(L["%d days"], days)
+        panel, description, 30, L["Stale after"], 1, #STALE_STEPS, L["Only fresh scans"], L["Two weeks"],
+        function(index)
+            return StaleText(STALE_STEPS[index])
         end
     )
-    return label, BindSlider(panel, slider, "staleDays", Same, Same)
+    return label, BindSlider(panel, slider, "staleHours", NearestStaleStep, function(index)
+        return STALE_STEPS[index]
+    end)
 end
 
 -- A checkbox for a true/false setting, with its label to the right.
