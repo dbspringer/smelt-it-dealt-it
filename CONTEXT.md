@@ -41,11 +41,11 @@ The lowest unit price at which the Price Source last saw an item listed. It is t
 _Avoid_: Market price, AH value, min buyout
 
 **Price Age**:
-The number of whole days since the Price Source last saw an item on the auction house. A price seen today has age 0.
+How long ago an item was last seen on the auction house. The addon's own record of full scans and searches gives it in hours; without one, the Price Source's whole days count at their oldest (seen yesterday is up to 48 hours).
 _Avoid_: Scan age, freshness
 
 **Stale Price**:
-An auction price whose Price Age is at or above the stale limit (default 1 day, so anything not seen today), or unknown. A Stale Price still gives a Verdict, with a warning. A vendor price is never stale.
+An auction price whose Price Age is over the stale limit (default 1 hour), or unknown. A Stale Price still gives a Verdict, with a warning. A vendor price is never stale.
 _Avoid_: Old data, outdated price
 
 **No Data**:

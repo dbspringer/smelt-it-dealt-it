@@ -7,9 +7,9 @@ local Config = {}
 ns.Config = Config
 
 -- Whole numbers, as the sliders show them: the Toss-up percent, the Toss-up
--- minimum in copper for one cast, and the stale limit in days. Then the two
+-- minimum in copper for one cast, and the stale limit in hours. Then the two
 -- ways into the Smelt Table besides /smelt.
-local DEFAULTS = { percent = 5, minimum = 100, staleDays = 1, ahButton = true, compartment = true }
+local DEFAULTS = { percent = 5, minimum = 100, staleHours = 1, ahButton = true, compartment = true }
 
 local db
 local listeners = {}
@@ -32,6 +32,10 @@ end
 -- with fewer values, still works.
 function Config.Get(name)
     local saved = db.settings and db.settings[name]
+    -- The stale limit was saved in whole days before it moved to hours.
+    if saved == nil and name == "staleHours" and db.settings and db.settings.staleDays then
+        saved = db.settings.staleDays * 24
+    end
     if saved == nil then
         return DEFAULTS[name]
     end
@@ -48,8 +52,8 @@ function Config.Threshold()
     return { percent = Config.Get("percent") / 100, minimum = Config.Get("minimum") }
 end
 
-function Config.StaleDays()
-    return Config.Get("staleDays")
+function Config.StaleHours()
+    return Config.Get("staleHours")
 end
 
 -- Keyed on the bar's item ID, the Smelt Recipe's identity.

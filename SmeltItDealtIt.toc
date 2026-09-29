@@ -16,11 +16,13 @@ src/Config.lua
 src/Items.lua
 src/Characters.lua
 src/RecipeCheck.lua
+src/Freshness.lua
 src/PriceSource.lua
 # Price Source adapters, in priority order.
 src/Auctionator.lua
 src/SmeltTable.lua
 src/MiningScan.lua
+src/ScanWatch.lua
 src/Options.lua
 src/Access.lua
 SmeltItDealtIt.lua

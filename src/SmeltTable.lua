@@ -6,6 +6,7 @@ local Config = ns.Config
 local Items = ns.Items
 local Recipes = ns.Recipes
 local Characters = ns.Characters
+local Freshness = ns.Freshness
 
 -- The Smelt Table window: one row for each Smelt Recipe that is not hidden,
 -- in Mining skill order.
@@ -87,16 +88,34 @@ local function CountedName(itemID, count)
     return Items.Name(itemID)
 end
 
-local function IsStale(price, isVendor, age)
-    return price ~= nil and not isVendor and (age == nil or age >= Config.StaleDays())
+local function IsStale(itemID, price, isVendor, age)
+    if price == nil or isVendor then
+        return false
+    end
+    return Freshness.IsStale(itemID, age, GetServerTime(), Config.StaleHours())
 end
 
-local function AgeText(isVendor, age)
+-- Exact when the addon saw the item itself; otherwise the Price Source's
+-- whole days.
+local function AgeText(itemID, isVendor, age)
     if isVendor then
         return L["vendor price"]
-    elseif age == nil then
+    end
+    local hours, exact = Freshness.AgeHours(itemID, age, GetServerTime())
+    if hours == nil then
         return L["age unknown"]
-    elseif age == 0 then
+    elseif exact then
+        local minutes = math.floor(hours * 60)
+        if minutes < 1 then
+            return L["seen just now"]
+        elseif minutes < 60 then
+            return string.format(L["seen %d min ago"], minutes)
+        elseif hours < 24 then
+            return string.format(L["seen %d h ago"], math.floor(hours))
+        end
+        age = math.floor(hours / 24)
+    end
+    if age == 0 then
         return L["seen today"]
     elseif age == 1 then
         return L["seen yesterday"]
@@ -119,8 +138,8 @@ local function AddPriceLine(itemID, count)
         GameTooltip:AddDoubleLine(label, L["no price"], 1, 1, 1, GRAY_FONT_COLOR:GetRGB())
         return
     end
-    local color = IsStale(price, isVendor, age) and RED_FONT_COLOR or HIGHLIGHT_FONT_COLOR
-    local text = string.format(L["%s each, %s"], Money(price), AgeText(isVendor, age))
+    local color = IsStale(itemID, price, isVendor, age) and RED_FONT_COLOR or HIGHLIGHT_FONT_COLOR
+    local text = string.format(L["%s each, %s"], Money(price), AgeText(itemID, isVendor, age))
     GameTooltip:AddDoubleLine(label, text, 1, 1, 1, color:GetRGB())
 end
 
@@ -280,7 +299,7 @@ local function ShowRow(row)
 
     local stale = false
     EachItem(recipe, function(itemID)
-        stale = stale or IsStale(PriceSource.Lookup(itemID))
+        stale = stale or IsStale(itemID, PriceSource.Lookup(itemID))
     end)
     row.stale:SetShown(stale)
 

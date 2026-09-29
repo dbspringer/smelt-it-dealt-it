@@ -29,11 +29,15 @@ events:SetScript("OnEvent", function(_, event, name)
         ns.db = SmeltItDealtItDB
         ns.db.characters = ns.db.characters or {}
         ns.db.corrections = ns.db.corrections or {}
+        ns.db.freshness = ns.db.freshness or {}
         ns.Config.Use(ns.db)
         ns.Characters.Use(ns.db.characters)
         ns.Recipes.UseCorrections(ns.db.corrections)
     elseif event == "PLAYER_LOGIN" then
         ns.player = CurrentPlayer()
+        -- Each realm has its own auction house and prices.
+        ns.db.freshness[ns.player.realm] = ns.db.freshness[ns.player.realm] or {}
+        ns.Freshness.Use(ns.db.freshness[ns.player.realm])
         ns.MiningScan.CheckLogin()
         -- Every OptionalDeps price addon has loaded by now, and Auctionator
         -- builds its price data on this event, so no price is read earlier.
