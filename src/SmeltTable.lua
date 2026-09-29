@@ -4,6 +4,8 @@ local Smelt = ns.Smelt
 local PriceSource = ns.PriceSource
 local Config = ns.Config
 local Items = ns.Items
+local Recipes = ns.Recipes
+local Characters = ns.Characters
 
 -- The Smelt Table window: one row for each Smelt Recipe that is not hidden,
 -- in Mining skill order.
@@ -15,12 +17,18 @@ local ROW_HEIGHT = 24
 local ICON_SIZE = 18
 local PADDING = 8
 -- ButtonFrameTemplate's title bar and borders around the inset.
-local CHROME_WIDTH, CHROME_HEIGHT = 12, 70
+local INSET_TOP = 24
+local CHROME_WIDTH, CHROME_HEIGHT = 12, INSET_TOP + 10
+local HINT_HEIGHT = 22
+-- A row that no Mailable Character can smelt.
+local UNKNOWN_ALPHA = 0.45
 local STALE_ICON = "Interface\\DialogFrame\\UI-Dialog-Icon-AlertNew"
 -- An item icon from vanilla, so every client has it. The UI gear textures
 -- differ between clients, and Forever lacks the classic one.
 local OPTIONS_ICON = "Interface\\Icons\\INV_Misc_Gear_01"
 local NO_VALUE = "-"
+-- The most Reagents a Smelt Recipe has (Elementium).
+local MAX_REAGENTS = 4
 
 local COLUMNS = {
     { key = "bar", width = 180, justify = "LEFT", header = L["Bar"],
@@ -116,11 +124,27 @@ local function AddPriceLine(itemID, count)
     GameTooltip:AddDoubleLine(label, text, 1, 1, 1, color:GetRGB())
 end
 
+-- Says nothing until a Mailable Character has opened the Mining window: the
+-- table's hint covers that case.
+local function AddKnownByLine(bar)
+    if not Characters.AnyRecorded(ns.player) then
+        return
+    end
+    local names = Characters.KnownBy(bar, ns.player)
+    if #names > 0 then
+        local text = string.format(L["Known by: %s"], table.concat(names, LIST_DELIMITER or ", "))
+        GameTooltip:AddLine(text, 1, 1, 1, true)
+    else
+        GameTooltip:AddLine(L["None of the characters you can mail to knows this smelt."], 1, 1, 1, true)
+    end
+end
+
 local function ShowRowTooltip(row)
-    local recipe = row.recipe
+    local recipe = Recipes.Get(row.barID)
     GameTooltip:SetOwner(row, "ANCHOR_RIGHT")
     GameTooltip_SetTitle(GameTooltip, Items.Name(recipe.bar))
     EachItem(recipe, AddPriceLine)
+    AddKnownByLine(recipe.bar)
     if recipe.blackForge then
         GameTooltip:AddLine(L["Smelt only at the Black Forge."], 1, 1, 1, true)
     end
@@ -157,7 +181,9 @@ local function AddIcon(parent, itemID, x)
     local icon = parent:CreateTexture(nil, "ARTWORK")
     icon:SetSize(ICON_SIZE, ICON_SIZE)
     icon:SetPoint("LEFT", parent, "LEFT", x, 0)
-    icon:SetTexture(Items.Icon(itemID))
+    if itemID then
+        icon:SetTexture(Items.Icon(itemID))
+    end
     return icon
 end
 
@@ -193,7 +219,9 @@ local function CreateRow(parent, recipe)
     row:EnableMouse(true)
     row:SetScript("OnEnter", ShowRowTooltip)
     row:SetScript("OnLeave", HideTooltip)
-    row.recipe = recipe
+    -- Only the identity is fixed. Everything else comes from Recipes.Get on
+    -- each refresh, since a Mining window scan can correct the recipe.
+    row.barID = recipe.bar
 
     local barColumn = ColumnByKey("bar")
     AddIcon(row, recipe.bar, barColumn.x)
@@ -202,21 +230,18 @@ local function CreateRow(parent, recipe)
     row.bar:SetWidth(barColumn.width - ICON_SIZE - 10)
     row.bar:SetJustifyH("LEFT")
     row.bar:SetWordWrap(false)
-    local function ShowBarName()
-        row.bar:SetText(CountedName(recipe.bar, recipe.barsMade))
-    end
-    ShowBarName()
-    Items.Load(recipe.bar, ShowBarName)
+    Items.Load(recipe.bar, function()
+        local current = Recipes.Get(recipe.bar)
+        row.bar:SetText(CountedName(current.bar, current.barsMade))
+    end)
 
+    row.reagents = {}
     local x = ColumnByKey("reagents").x
-    for _, reagent in ipairs(recipe.reagents) do
-        local icon = AddIcon(row, reagent[1], x)
-        if reagent[2] > 1 then
-            local count = row:CreateFontString(nil, "OVERLAY", "NumberFontNormalSmall")
-            count:SetPoint("BOTTOMRIGHT", icon, "BOTTOMRIGHT", 2, -2)
-            count:SetText(reagent[2])
-        end
-        Items.Load(reagent[1])
+    for index = 1, MAX_REAGENTS do
+        local icon = AddIcon(row, nil, x)
+        local count = row:CreateFontString(nil, "OVERLAY", "NumberFontNormalSmall")
+        count:SetPoint("BOTTOMRIGHT", icon, "BOTTOMRIGHT", 2, -2)
+        row.reagents[index] = { icon = icon, count = count }
         x = x + ICON_SIZE + 6
     end
 
@@ -231,11 +256,30 @@ local function CreateRow(parent, recipe)
     return row
 end
 
+local function ShowRecipe(row, recipe)
+    row.bar:SetText(CountedName(recipe.bar, recipe.barsMade))
+    for index, slot in ipairs(row.reagents) do
+        local reagent = recipe.reagents[index]
+        slot.icon:SetShown(reagent ~= nil)
+        slot.count:SetShown(reagent ~= nil)
+        if reagent then
+            slot.icon:SetTexture(Items.Icon(reagent[1]))
+            slot.count:SetText(reagent[2] > 1 and reagent[2] or "")
+            Items.Load(reagent[1])
+        end
+    end
+end
+
 local function ShowRow(row)
-    local result = Smelt.Evaluate(row.recipe, PriceSource.Lookup, Config.Threshold())
+    local recipe = Recipes.Get(row.barID)
+    ShowRecipe(row, recipe)
+    local result = Smelt.Evaluate(recipe, PriceSource.Lookup, Config.Threshold())
+
+    local unknown = Characters.AnyRecorded(ns.player) and #Characters.KnownBy(recipe.bar, ns.player) == 0
+    row:SetAlpha(unknown and UNKNOWN_ALPHA or 1)
 
     local stale = false
-    EachItem(row.recipe, function(itemID)
+    EachItem(recipe, function(itemID)
         stale = stale or IsStale(PriceSource.Lookup(itemID))
     end)
     row.stale:SetShown(stale)
@@ -297,7 +341,8 @@ function SmeltTable.Refresh()
 end
 
 -- Stacks the visible rows and fits the window to them, at least one row high
--- so the message has room.
+-- so the message has room. Until a Mailable Character has opened the Mining
+-- window, a hint under the rows says the table can't grey anything out yet.
 local function Layout()
     visibleRows = {}
     for _, row in pairs(rows) do
@@ -309,8 +354,14 @@ local function Layout()
         row:Show()
         table.insert(visibleRows, row)
     end
-    local tableHeight = (math.max(#visibleRows, 1) + 1) * ROW_HEIGHT + 2 * PADDING
-    frame:SetSize(TABLE_WIDTH + 2 * PADDING + CHROME_WIDTH, tableHeight + CHROME_HEIGHT)
+    local rowsHeight = (math.max(#visibleRows, 1) + 1) * ROW_HEIGHT
+
+    local showHint = not Characters.AnyRecorded(ns.player)
+    frame.hint:SetShown(showHint)
+    frame.hint:SetPoint("TOPLEFT", PADDING, -PADDING - rowsHeight - 4)
+
+    local height = rowsHeight + 2 * PADDING + (showHint and HINT_HEIGHT or 0)
+    frame:SetSize(TABLE_WIDTH + 2 * PADDING + CHROME_WIDTH, height + CHROME_HEIGHT)
 end
 
 local function SavePosition()
@@ -351,6 +402,9 @@ local function Create()
     frame = CreateFrame("Frame", FRAME_NAME, UIParent, "ButtonFrameTemplate")
     ButtonFrameTemplate_HidePortrait(frame)
     ButtonFrameTemplate_HideButtonBar(frame)
+    -- The template leaves room under the title for a portrait and tabs, which
+    -- this window has neither of, so the inset starts right below the title.
+    frame.Inset:SetPoint("TOPLEFT", frame, "TOPLEFT", 4, -INSET_TOP)
     frame:SetTitle(C_AddOns.GetAddOnMetadata(addonName, "Title"))
     frame:SetToplevel(true)
     frame:SetClampedToScreen(true)
@@ -373,9 +427,14 @@ local function Create()
     frame.content = CreateFrame("Frame", nil, frame.Inset)
     frame.content:SetAllPoints()
     CreateHeader(frame.content)
-    for _, recipe in ipairs(ns.Recipes) do
+    for _, recipe in ipairs(Recipes.All()) do
         rows[recipe.bar] = CreateRow(frame.content, recipe)
     end
+
+    frame.hint = frame.content:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    frame.hint:SetPoint("RIGHT", -PADDING, 0)
+    frame.hint:SetJustifyH("LEFT")
+    frame.hint:SetText(L["Open your Mining window once so the table knows what you can smelt."])
 
     frame.message = frame.Inset:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     frame.message:SetPoint("TOPLEFT", PADDING * 2, -PADDING * 2)
@@ -418,3 +477,12 @@ Config.OnChange(function()
         SmeltTable.Refresh()
     end
 end)
+
+-- A Mining window scan or a login without Mining changed what the Mailable
+-- Characters know.
+function SmeltTable.CharactersChanged()
+    if frame then
+        Layout()
+        SmeltTable.Refresh()
+    end
+end

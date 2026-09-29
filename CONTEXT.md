@@ -11,7 +11,7 @@ One Mining smelt: a set of Reagents that makes a number of one bar. Each Smelt R
 _Avoid_: Recipe chain, conversion
 
 **Known Recipe**:
-A Smelt Recipe that a given character of the player has learned, as seen the last time that character opened the Mining window. The Smelt Table greys out a recipe that no Mailable Character knows; the Verdict does not depend on it.
+A Smelt Recipe that a given character of the player has been seen to know in their own Mining window. The record only grows, since a smelt can't be unlearned; a character that logs in without Mining has none. Once at least one Mailable Character has opened the Mining window, the Smelt Table greys out a recipe that no Mailable Character knows; the Verdict does not depend on it.
 _Avoid_: Learned recipe, available recipe
 
 **Mailable Character**:

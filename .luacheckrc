@@ -18,12 +18,17 @@ read_globals = {
   "C_AddOns",
   "C_Item",
   "C_Timer",
+  "C_TradeSkillUI",
   "CreateFrame",
   "CreateMinimalSliderFormatter",
   "ERR_NOT_IN_COMBAT",
   "GameTooltip",
   "GameTooltip_SetTitle",
+  "GetAutoCompleteRealms",
   "GetMoneyString",
+  "GetNormalizedRealmName",
+  "GetProfessionInfo",
+  "GetProfessions",
   "GRAY_FONT_COLOR",
   "GREEN_FONT_COLOR",
   "HIGHLIGHT_FONT_COLOR",
@@ -38,6 +43,8 @@ read_globals = {
   "UIErrorsFrame",
   "UIParent",
   "UISpecialFrames",
+  "UnitFactionGroup",
+  "UnitName",
 }
 
 files["spec"] = { std = "+busted" }

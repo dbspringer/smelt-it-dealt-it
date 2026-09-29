@@ -1,6 +1,23 @@
 local addonName, ns = ...
 local L = ns.L
 
+-- Who is logged in, and which realms they can mail to (their own, plus any
+-- connected realms), for the Mailable Character rule.
+local function CurrentPlayer()
+    local name, realm = UnitName("player"), GetNormalizedRealmName()
+    local realms = { [realm] = true }
+    for _, connected in ipairs(GetAutoCompleteRealms() or {}) do
+        realms[connected] = true
+    end
+    return {
+        key = name .. "-" .. realm,
+        name = name,
+        realm = realm,
+        faction = UnitFactionGroup("player"),
+        realms = realms,
+    }
+end
+
 local events = CreateFrame("Frame")
 events:RegisterEvent("ADDON_LOADED")
 events:RegisterEvent("PLAYER_LOGIN")
@@ -10,8 +27,14 @@ events:SetScript("OnEvent", function(_, event, name)
         -- character, so nothing lives in per-character saved variables.
         SmeltItDealtItDB = SmeltItDealtItDB or {}
         ns.db = SmeltItDealtItDB
-        ns.Config.Use(SmeltItDealtItDB)
+        ns.db.characters = ns.db.characters or {}
+        ns.db.corrections = ns.db.corrections or {}
+        ns.Config.Use(ns.db)
+        ns.Characters.Use(ns.db.characters)
+        ns.Recipes.UseCorrections(ns.db.corrections)
     elseif event == "PLAYER_LOGIN" then
+        ns.player = CurrentPlayer()
+        ns.MiningScan.CheckLogin()
         -- Every OptionalDeps price addon has loaded by now, and Auctionator
         -- builds its price data on this event, so no price is read earlier.
         ns.PriceSource.Select()

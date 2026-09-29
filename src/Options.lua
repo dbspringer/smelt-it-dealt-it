@@ -158,7 +158,7 @@ local function AddRecipesSection(panel, anchor)
 
     local checkboxes = {}
     local last
-    for index, recipe in ipairs(ns.Recipes) do
+    for index, recipe in ipairs(ns.Recipes.All()) do
         checkboxes[recipe.bar] = AddRecipeCheckbox(panel, description, recipe, index)
         last = checkboxes[recipe.bar]
     end

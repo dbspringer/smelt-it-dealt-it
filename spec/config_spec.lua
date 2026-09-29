@@ -5,7 +5,7 @@ local function LoadConfig(db)
     assert(loadfile("src/Recipes.lua"))("SmeltItDealtIt", ns)
     assert(loadfile("src/Config.lua"))("SmeltItDealtIt", ns)
     ns.Config.Use(db)
-    return ns.Config, ns.Recipes
+    return ns.Config, ns.Recipes.BUILT_IN
 end
 
 local TIN_BAR = 3576
