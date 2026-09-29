@@ -8,17 +8,20 @@ local Options = {}
 ns.Options = Options
 
 local SLIDER_LEFT = 180
-local RECIPE_COLUMNS = 2
-local RECIPE_COLUMN_WIDTH = 260
+-- The panel has a fixed height, so the recipes take three columns.
+local RECIPE_COLUMNS = 3
+local RECIPE_COLUMN_WIDTH = 200
+local SECTION_GAP = 20
 local ICON_SIZE = 18
 
 local category
 -- Whether Options.Open closed an open Smelt Table.
 local reopenTable = false
 
-local function AddSectionHeader(panel, anchor, text)
+-- A checkbox sits 4 left of the text column, so a header below one passes 4.
+local function AddSectionHeader(panel, anchor, text, x)
     local header = panel:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
-    header:SetPoint("TOPLEFT", anchor, "BOTTOMLEFT", 0, -30)
+    header:SetPoint("TOPLEFT", anchor, "BOTTOMLEFT", x or 0, -SECTION_GAP)
     header:SetText(text)
     return header
 end
@@ -126,6 +129,43 @@ local function AddPricesSection(panel, anchor)
     return label, BindSlider(panel, slider, "staleDays", Same, Same)
 end
 
+-- A checkbox for a true/false setting, with its label to the right.
+local function AddSettingCheckbox(panel, anchor, gap, name, text)
+    local checkbox = CreateFrame("CheckButton", nil, panel, "UICheckButtonTemplate")
+    checkbox:SetPoint("TOPLEFT", anchor, "BOTTOMLEFT", -4, -gap)
+    checkbox:SetScript("OnClick", function(self)
+        Config.Set(name, self:GetChecked())
+    end)
+    local label = panel:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
+    label:SetPoint("LEFT", checkbox, "RIGHT", 4, 0)
+    label:SetText(text)
+    return checkbox, function()
+        checkbox:SetChecked(Config.Get(name))
+    end
+end
+
+local function AddAccessSection(panel, anchor)
+    local header = AddSectionHeader(panel, anchor, L["Access"])
+    local description = AddBodyText(
+        panel, header, L["/smelt always opens the Smelt Table. These add two more ways in."]
+    )
+
+    local auctionHouse, refreshAuctionHouse = AddSettingCheckbox(
+        panel, description, 10, "ahButton", L["Show a button on the auction house"]
+    )
+    local compartment, refreshCompartment = AddSettingCheckbox(
+        panel, auctionHouse, 0, "compartment", L["Show in the addon compartment"]
+    )
+    -- Side by side, to keep the panel short.
+    compartment:ClearAllPoints()
+    compartment:SetPoint("LEFT", auctionHouse, "LEFT", 2 * RECIPE_COLUMN_WIDTH - 100, 0)
+
+    return auctionHouse, function()
+        refreshAuctionHouse()
+        refreshCompartment()
+    end
+end
+
 local function AddRecipeCheckbox(panel, header, recipe, index)
     local column = (index - 1) % RECIPE_COLUMNS
     local line = math.floor((index - 1) / RECIPE_COLUMNS)
@@ -152,18 +192,21 @@ local function AddRecipeCheckbox(panel, header, recipe, index)
     return checkbox
 end
 
-local function AddRecipesSection(panel, anchor)
-    local header = AddSectionHeader(panel, anchor, L["Smelt Recipes"])
+local function AddRecipesSection(panel, anchor, x)
+    local header = AddSectionHeader(panel, anchor, L["Smelt Recipes"], x)
     local description = AddBodyText(panel, header, L["Unchecked recipes leave the Smelt Table."])
 
     local checkboxes = {}
-    local last
+    -- The first checkbox of the last line, so what follows lines up on the left.
+    local bottom
     for index, recipe in ipairs(ns.Recipes.All()) do
         checkboxes[recipe.bar] = AddRecipeCheckbox(panel, description, recipe, index)
-        last = checkboxes[recipe.bar]
+        if (index - 1) % RECIPE_COLUMNS == 0 then
+            bottom = checkboxes[recipe.bar]
+        end
     end
 
-    return last, function()
+    return bottom, function()
         for bar, checkbox in pairs(checkboxes) do
             checkbox:SetChecked(not Config.IsHidden(bar))
         end
@@ -182,16 +225,18 @@ function Options.Register()
 
     local verdictBottom, refreshVerdict = AddVerdictSection(panel, header)
     local pricesBottom, refreshPrices = AddPricesSection(panel, verdictBottom)
-    local recipesBottom, refreshRecipes = AddRecipesSection(panel, pricesBottom)
+    local accessBottom, refreshAccess = AddAccessSection(panel, pricesBottom)
+    local recipesBottom, refreshRecipes = AddRecipesSection(panel, accessBottom, 4)
 
     local function Refresh()
         refreshVerdict()
         refreshPrices()
+        refreshAccess()
         refreshRecipes()
     end
 
     local reset = CreateFrame("Button", nil, panel, "UIPanelButtonTemplate")
-    reset:SetPoint("TOPLEFT", recipesBottom, "BOTTOMLEFT", 4, -24)
+    reset:SetPoint("TOPLEFT", recipesBottom, "BOTTOMLEFT", 4, -16)
     reset:SetText(L["Reset to defaults"])
     reset:SetWidth(reset:GetTextWidth() + 40)
     reset:SetScript("OnClick", function()

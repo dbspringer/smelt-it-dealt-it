@@ -42,6 +42,7 @@ events:SetScript("OnEvent", function(_, event, name)
             print(ns.SmeltTable.NoPriceSourceMessage())
         end
         ns.Options.Register()
+        ns.Access.Register()
     end
 end)
 

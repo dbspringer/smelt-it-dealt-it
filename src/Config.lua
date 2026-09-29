@@ -7,8 +7,9 @@ local Config = {}
 ns.Config = Config
 
 -- Whole numbers, as the sliders show them: the Toss-up percent, the Toss-up
--- minimum in copper for one cast, and the stale limit in days.
-local DEFAULTS = { percent = 5, minimum = 100, staleDays = 1 }
+-- minimum in copper for one cast, and the stale limit in days. Then the two
+-- ways into the Smelt Table besides /smelt.
+local DEFAULTS = { percent = 5, minimum = 100, staleDays = 1, ahButton = true, compartment = true }
 
 local db
 local listeners = {}

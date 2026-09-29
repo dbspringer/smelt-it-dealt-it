@@ -31,6 +31,18 @@ describe("Config", function()
         assert.are.equal(1, Config.StaleDays())
     end)
 
+    it("shows both access points on a fresh install", function()
+        local Config = LoadConfig({})
+        assert.is_true(Config.Get("ahButton"))
+        assert.is_true(Config.Get("compartment"))
+    end)
+
+    -- A saved false must not fall back to a default of true.
+    it("keeps a setting the player turned off, off", function()
+        local Config = LoadConfig({ settings = { ahButton = false } })
+        assert.is_false(Config.Get("ahButton"))
+    end)
+
     it("leaves out Hidden Recipes and keeps Mining skill order", function()
         local Config, Recipes = LoadConfig({})
         Config.SetHidden(TIN_BAR, true)
