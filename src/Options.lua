@@ -270,11 +270,27 @@ function Options.Register()
         version = "dev"
     end
     local footer = panel:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
-    footer:SetPoint("BOTTOMLEFT", 7, 16)
     footer:SetText(string.format(L["Version %s | Locale: %s"], version, GetLocale()))
 
+    -- On the row of the Options window's Close button, which sits below the
+    -- category's area. Its position is read, never changed, each time the
+    -- panel shows, so a Blizzard layout change can't strand the footer.
+    local function PlaceFooter()
+        local _, closeY = SettingsPanel.CloseButton:GetCenter()
+        local bottom = panel:GetBottom()
+        footer:ClearAllPoints()
+        if closeY and bottom then
+            footer:SetPoint("LEFT", panel, "BOTTOMLEFT", 7, closeY - bottom)
+        else
+            footer:SetPoint("BOTTOMLEFT", 7, 16)
+        end
+    end
+
     -- The panel calls this each time it shows the category.
-    panel.OnRefresh = Refresh
+    panel.OnRefresh = function()
+        Refresh()
+        PlaceFooter()
+    end
 
     category = Settings.RegisterCanvasLayoutCategory(panel, title)
     Settings.RegisterAddOnCategory(category)
