@@ -1,15 +1,15 @@
 local _, ns = ...
 
 -- Price Age in hours. The Price Source only knows whole days, so the addon
--- keeps its own record of when it saw auction house data: the last full scan,
--- and each item a search or browse listed. Pure, so the specs can load it.
+-- keeps its own record of when it saw each item listed on the auction house:
+-- in a full scan, a search, or a browse. Pure, so the specs can load it.
 local Freshness = {}
 ns.Freshness = Freshness
 
 local HOUR = 3600
 
--- { fullScan = time, seen = { [itemID] = time } } for the current realm,
--- whose auction house the prices come from.
+-- { seen = { [itemID] = time } } for the current realm, whose auction house
+-- the prices come from.
 local record = { seen = {} }
 
 function Freshness.Use(saved)
@@ -23,18 +23,23 @@ function Freshness.Seen(itemID, when)
     end
 end
 
-function Freshness.FullScan(when)
-    record.fullScan = when
+-- Marks the tracked items a full scan lists, over the indices first..last.
+-- itemAt(index) gives the item at an index, or nil while the game hasn't
+-- loaded it. Only listed items count: one the scan missed keeps its older
+-- sighting, so its price can't look fresh.
+function Freshness.SeenInScan(itemAt, first, last, tracked, when)
+    for index = first, last do
+        local itemID = itemAt(index)
+        if itemID and tracked[itemID] then
+            Freshness.Seen(itemID, when)
+        end
+    end
 end
 
 -- Returns the hours since the item was seen, and whether that is exact.
 -- auctionAge is the Price Source's whole days (0 is today, nil unknown).
 function Freshness.AgeHours(itemID, auctionAge, now)
     local seen = record.seen[itemID]
-    -- A full scan saw the item only if the Price Source has it as seen today.
-    if auctionAge == 0 and record.fullScan and (seen == nil or record.fullScan > seen) then
-        seen = record.fullScan
-    end
     if seen then
         return (now - seen) / HOUR, true
     end
