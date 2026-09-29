@@ -170,12 +170,8 @@ end
 
 local function AddAccessSection(panel, anchor)
     local header = AddSectionHeader(panel, anchor, L["Access"])
-    local description = AddBodyText(
-        panel, header, L["/smelt always opens the Smelt Table. These add two more ways in."]
-    )
-
     local auctionHouse, refreshAuctionHouse = AddSettingCheckbox(
-        panel, description, 10, "ahButton", L["Show a button on the auction house"]
+        panel, header, 6, "ahButton", L["Show a button on the auction house"]
     )
     local compartment, refreshCompartment = AddSettingCheckbox(
         panel, auctionHouse, 0, "compartment", L["Show in the addon compartment"]
@@ -218,13 +214,12 @@ end
 
 local function AddRecipesSection(panel, anchor, x)
     local header = AddSectionHeader(panel, anchor, L["Smelt Recipes"], x)
-    local description = AddBodyText(panel, header, L["Unchecked recipes leave the Smelt Table."])
 
     local checkboxes = {}
     -- The first checkbox of the last line, so what follows lines up on the left.
     local bottom
     for index, recipe in ipairs(ns.Recipes.All()) do
-        checkboxes[recipe.bar] = AddRecipeCheckbox(panel, description, recipe, index)
+        checkboxes[recipe.bar] = AddRecipeCheckbox(panel, header, recipe, index)
         if (index - 1) % RECIPE_COLUMNS == 0 then
             bottom = checkboxes[recipe.bar]
         end
@@ -275,8 +270,7 @@ function Options.Register()
         version = "dev"
     end
     local footer = panel:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
-    -- Bottom right, since the full panel's Reset button sits at the bottom left.
-    footer:SetPoint("BOTTOMRIGHT", -12, 16)
+    footer:SetPoint("BOTTOMLEFT", 7, 16)
     footer:SetText(string.format(L["Version %s | Locale: %s"], version, GetLocale()))
 
     -- The panel calls this each time it shows the category.
