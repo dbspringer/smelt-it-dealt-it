@@ -20,23 +20,11 @@ describe("Price Age in hours", function()
         assert.is_true(exact)
     end)
 
-    it("takes the last full scan only for items the Price Source saw today", function()
+    it("keeps the later of two sightings", function()
         local Freshness = LoadFreshness()
-        Freshness.FullScan(T)
-
-        assert.are.equal(1, Freshness.AgeHours(ORE, 0, T + HOUR))
-        -- Seen two days ago: the scan today didn't list it.
-        assert.are.equal(72, Freshness.AgeHours(ORE, 2, T + HOUR))
-    end)
-
-    it("uses the later of a search and a full scan", function()
-        local Freshness = LoadFreshness()
+        Freshness.Seen(ORE, T + 3 * HOUR)
         Freshness.Seen(ORE, T)
-        Freshness.FullScan(T + 3 * HOUR)
         assert.are.equal(0, Freshness.AgeHours(ORE, 0, T + 3 * HOUR))
-
-        Freshness.Seen(ORE, T + 5 * HOUR)
-        assert.are.equal(0, Freshness.AgeHours(ORE, 0, T + 5 * HOUR))
     end)
 
     it("assumes the oldest time in the day without a record of its own", function()
@@ -68,5 +56,33 @@ describe("Stale Price in hours", function()
 
     it("is stale when the age is unknown", function()
         assert.is_true(LoadFreshness().IsStale(ORE, nil, T, 336))
+    end)
+end)
+
+describe("A full scan", function()
+    local BAR, OTHER = 2, 3
+    local TRACKED = { [ORE] = true, [BAR] = true }
+
+    -- A full scan list: one item ID per index, from 0, as the game numbers it.
+    local function Listing(itemIDs)
+        return function(index)
+            return itemIDs[index + 1]
+        end
+    end
+
+    it("freshens only the tracked items it lists", function()
+        local Freshness = LoadFreshness()
+        Freshness.SeenInScan(Listing({ OTHER, ORE, OTHER }), 0, 2, TRACKED, T)
+
+        assert.are.equal(0, Freshness.AgeHours(ORE, 0, T))
+        -- Seen earlier today, but not in this scan: no hours of its own.
+        assert.is_false(select(2, Freshness.AgeHours(BAR, 0, T)))
+        assert.is_false(select(2, Freshness.AgeHours(OTHER, 0, T)))
+    end)
+
+    it("skips entries whose item isn't known yet", function()
+        local Freshness = LoadFreshness()
+        Freshness.SeenInScan(Listing({ nil, ORE }), 0, 1, TRACKED, T)
+        assert.are.equal(0, Freshness.AgeHours(ORE, 0, T))
     end)
 end)
