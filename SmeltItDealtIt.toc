@@ -29,6 +29,7 @@
 ## SavedVariables: SmeltItDealtItDB
 ## X-License: MIT
 ## X-Website: https://github.com/dbspringer/smelt-it-dealt-it
+## X-Curse-Project-ID: 1718509
 
 locales/enUS.lua
 locales/deDE.lua
