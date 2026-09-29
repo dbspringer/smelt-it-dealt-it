@@ -17,7 +17,8 @@ local ROW_HEIGHT = 24
 local ICON_SIZE = 18
 local PADDING = 8
 -- ButtonFrameTemplate's title bar and borders around the inset.
-local CHROME_WIDTH, CHROME_HEIGHT = 12, 70
+local INSET_TOP = 24
+local CHROME_WIDTH, CHROME_HEIGHT = 12, INSET_TOP + 10
 local HINT_HEIGHT = 22
 -- A row that no Mailable Character can smelt.
 local UNKNOWN_ALPHA = 0.45
@@ -385,6 +386,9 @@ local function Create()
     frame = CreateFrame("Frame", FRAME_NAME, UIParent, "ButtonFrameTemplate")
     ButtonFrameTemplate_HidePortrait(frame)
     ButtonFrameTemplate_HideButtonBar(frame)
+    -- The template leaves room under the title for a portrait and tabs, which
+    -- this window has neither of, so the inset starts right below the title.
+    frame.Inset:SetPoint("TOPLEFT", frame, "TOPLEFT", 4, -INSET_TOP)
     frame:SetTitle(C_AddOns.GetAddOnMetadata(addonName, "Title"))
     frame:SetToplevel(true)
     frame:SetClampedToScreen(true)
